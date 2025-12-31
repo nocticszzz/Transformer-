@@ -71,7 +71,7 @@ class EncoderLayer(nn.Module):
         self.dropout2 = nn.Dropout(dropout)
         
     def forward(self, x, mask=None):
-        # === 关键修改：接收并返回 attn_weights ===
+
         attn_output, attn_weights = self.self_attn(x, x, x, mask)
         x = self.norm1(x + self.dropout1(attn_output))
         ffn_output = self.ffn(x)
@@ -116,8 +116,6 @@ class TransformerClassifier(nn.Module):
             mask = mask.unsqueeze(1).unsqueeze(2)
         
         for layer in self.layers:
-            # === 关键修改：这里要用 x, _ 来接收两个返回值 ===
-            # 训练时我们不需要权重，所以用 _ 丢弃
             x, _ = layer(x, mask)
             
         cls_output = x[:, 0, :] 

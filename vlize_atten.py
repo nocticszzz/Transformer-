@@ -9,10 +9,10 @@ from model import TransformerClassifier
 # 1. 配置与准备
 # ==========================================
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-MODEL_PATH = "best_model.pth"  # 确保你有这个文件
-CSV_PATH = "./data/IMDB Dataset.csv" # 确保路径正确
+MODEL_PATH = "best_model.pth"  
+CSV_PATH = "./data/IMDB Dataset.csv" 
 
-# 模拟 Tokenizer (必须与训练时一致)
+# 模拟 Tokenizer 
 def build_vocab(texts, max_size=10000):
     word_counts = Counter()
     for text in texts:
@@ -25,7 +25,7 @@ def build_vocab(texts, max_size=10000):
 def text_pipeline(text, vocab, max_len=200):
     tokens = text.lower().split()
     indices = [vocab.get(t, vocab["<UNK>"]) for t in tokens]
-    # 不做 Padding，为了可视化好看，直接用真实长度
+
     return torch.tensor(indices, dtype=torch.long).unsqueeze(0), tokens
 
 # ==========================================
@@ -69,15 +69,12 @@ def get_attention_weights(model, text):
         x = model.pos_encoder(x)
         
         # 4. Pass through Encoder Layers
-        # 关键点：我们要把每一层的 attention 存下来
         all_attentions = []
         for layer in model.layers:
-            # EncoderLayer.forward 返回 (x, attn_weights)
             x, attn = layer(x, mask=None) 
             all_attentions.append(attn)
             
         # 取最后一层的注意力权重
-        # Shape: [batch, n_heads, seq_len, seq_len]
         final_layer_attn = all_attentions[-1]
         
     return final_layer_attn, ["<CLS>"] + tokens
@@ -92,8 +89,6 @@ def plot_attention(text):
     attn_weights, tokens = get_attention_weights(model, text)
     
     # attn_weights shape: [1, 2, seq_len, seq_len] (batch=1, heads=2)
-    # 我们取第一个样本，并把所有头(Heads)的权重平均一下，或者只看第0个头
-    # 这里我们选择：平均所有头的注意力 (更能代表整体关注点)
     attn_avg = attn_weights[0].mean(dim=0).cpu().numpy() 
     
     # 绘图

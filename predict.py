@@ -28,8 +28,7 @@ def text_pipeline(text, vocab, max_len=200):
 
 # 读取数据来重建词表
 df = pd.read_csv('./data/IMDB Dataset.csv') 
-raw_texts = df['review'].tolist() # <--- 改成读取全部数据，和 train.py 保持一致
-vocab = build_vocab(raw_texts)
+raw_texts = df['review'].tolist() 
 print("词表构建完成！")
 
 # ==========================================
@@ -37,10 +36,10 @@ print("词表构建完成！")
 # ==========================================
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# 初始化模型结构 (参数必须与 train.py 里的一模一样！)
+# 初始化模型结构 
 model = TransformerClassifier(
     vocab_size=len(vocab),
-    d_model=64,      # 如果你改过 train.py 的 d_model，这里也要改
+    d_model=64,    
     n_heads=2, 
     d_ff=128, 
     n_layers=2, 
@@ -48,9 +47,9 @@ model = TransformerClassifier(
 ).to(DEVICE)
 
 # 加载 .pth 权重文件
-model_path = "best_model.pth" # 你的 .pth 文件名
+model_path = "best_model.pth" 
 model.load_state_dict(torch.load(model_path, map_location=DEVICE))
-model.eval() # 切换到评估模式 (关闭 Dropout 等)
+model.eval() 
 print(f"成功加载模型: {model_path}")
 
 # ==========================================
@@ -60,7 +59,7 @@ def predict_sentiment(sentence):
     tensor_input = text_pipeline(sentence, vocab).to(DEVICE)
     
     with torch.no_grad():
-        # Mask 不是必须的，因为 batch_size=1 且不做 softmax masking
+      
         output = model(tensor_input, mask=None)
         
         # 获取概率
@@ -72,7 +71,7 @@ def predict_sentiment(sentence):
     return label, confidence
 
 # ==========================================
-# 4. 开始测试！(你可以修改这里的句子)
+# 4. 开始测试
 # ==========================================
 if __name__ == "__main__":
     print("\n=== 模型测试 ===")
